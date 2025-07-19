@@ -76,6 +76,7 @@ export default function PatientDetailPage({
     }
 
     if (!user) {
+        setLoading(false);
         return;
     }
 

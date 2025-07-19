@@ -117,7 +117,7 @@ export default function FinancePage() {
     };
 
   useEffect(() => {
-    if (user?.uid && isFirebaseConfigured) {
+    if (user?.uid && isFirebaseConfigured && db) {
         fetchFinancials();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -102,7 +102,7 @@ export default function SettingsPage() {
   };
 
   const handleSaveCroppedImage = async (croppedBlob: Blob) => {
-      if (!user || !storage || !originalFile) return;
+      if (!user || !storage || !originalFile || !db) return;
 
       setIsUploading(true);
       const storageRef = ref(storage, `avatars/${user.uid}/${originalFile.name}`);
@@ -111,7 +111,7 @@ export default function SettingsPage() {
           const snapshot = await uploadBytes(storageRef, croppedBlob);
           const downloadURL = await getDownloadURL(snapshot.ref);
 
-          const userRef = doc(db!, 'users', user.uid);
+          const userRef = doc(db, 'users', user.uid);
           await updateDoc(userRef, { avatarUrl: downloadURL });
 
           setUserData(prev => prev ? { ...prev, avatarUrl: downloadURL } : null);
@@ -134,7 +134,7 @@ export default function SettingsPage() {
   };
 
   const handleSaveProfile = () => {
-    if (!isFirebaseConfigured || !user) {
+    if (!isFirebaseConfigured || !user || !db) {
         toast({ title: "Modo Demonstração", description: `As alterações foram salvas localmente.` });
         return;
     }
@@ -143,7 +143,7 @@ export default function SettingsPage() {
         return;
     }
     setIsSavingProfile(true);
-    const userRef = doc(db!, 'users', user.uid);
+    const userRef = doc(db, 'users', user.uid);
     const fullWhatsapp = `${countryCode}${localWhatsapp.replace(/\D/g, '')}`;
 
     updateDoc(userRef, { name, email, whatsapp: fullWhatsapp }).then(() => {

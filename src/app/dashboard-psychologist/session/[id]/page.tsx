@@ -267,7 +267,7 @@ export default function PsychologistSessionRoomPage() {
       };
       fetchSessionData();
     }
-  }, [user, params.id, router, toast]);
+  }, [user, params.id, router, toast, db]);
 
   if (loading || loadingSession || !user || !userData || !sessionData) {
     return (

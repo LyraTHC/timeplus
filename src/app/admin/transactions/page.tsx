@@ -41,13 +41,13 @@ export default function AdminTransactionsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!isFirebaseConfigured || !db) {
+            setLoading(false);
+            return;
+        }
+
         const fetchTransactions = async () => {
             setLoading(true);
-            if (!isFirebaseConfigured || !db) {
-                setLoading(false);
-                return;
-            }
-
             try {
                 const sessionsQuery = query(collection(db, 'sessions'), orderBy('sessionTimestamp', 'desc'));
                 const sessionsSnapshot = await getDocs(sessionsQuery);

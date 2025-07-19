@@ -91,7 +91,7 @@ export default function PacientesPage() {
       setLoading(false);
       setPatients([]);
     }
-  }, [user?.uid, isFirebaseConfigured]);
+  }, [user?.uid, isFirebaseConfigured, db]);
 
 
   const handleRowClick = (patientId: string) => {

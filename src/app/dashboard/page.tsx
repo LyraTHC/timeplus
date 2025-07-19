@@ -187,9 +187,9 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    if (user?.uid && isFirebaseConfigured) {
+    if (user?.uid && isFirebaseConfigured && db) {
       fetchSessions();
-    } else if (!isFirebaseConfigured) {
+    } else if (!isFirebaseConfigured || !db) {
         setLoadingHistory(false);
         setLoadingUpcoming(false);
     }
@@ -204,7 +204,7 @@ export default function Dashboard() {
   }
 
   const handleReviewSubmit = async () => {
-    if (!selectedSession) return;
+    if (!selectedSession || !db) return;
     if (rating === 0) {
       toast({
         variant: "destructive",
@@ -245,9 +245,9 @@ export default function Dashboard() {
   };
 
   const handleCancelSession = async (sessionId: string) => {
-    setIsCanceling(sessionId);
     if (!isFirebaseConfigured || !db) return;
     
+    setIsCanceling(sessionId);
     try {
         const sessionRef = doc(db, 'sessions', sessionId);
         await updateDoc(sessionRef, { status: 'Cancelada' });

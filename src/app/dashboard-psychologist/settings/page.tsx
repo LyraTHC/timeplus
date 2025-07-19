@@ -210,7 +210,7 @@ export default function SettingsPage() {
   };
 
   const handleSaveCroppedImage = async (croppedBlob: Blob) => {
-    if (!user || !storage || !originalFile) return;
+    if (!user || !storage || !originalFile || !db) return;
 
     setIsUploading(true);
     const storageRef = ref(storage, `avatars/${user.uid}/${originalFile.name}`);
@@ -219,7 +219,7 @@ export default function SettingsPage() {
         const snapshot = await uploadBytes(storageRef, croppedBlob);
         const downloadURL = await getDownloadURL(snapshot.ref);
 
-        const userRef = doc(db!, 'users', user.uid);
+        const userRef = doc(db, 'users', user.uid);
         await updateDoc(userRef, { avatarUrl: downloadURL });
 
         setUserData(prev => prev ? { ...prev, avatarUrl: downloadURL } : null);

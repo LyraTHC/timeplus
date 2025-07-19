@@ -42,12 +42,12 @@ export default function AdminPayoutsPage() {
     const { toast } = useToast();
     
     const fetchPayouts = async () => {
-        setLoading(true);
         if (!isFirebaseConfigured || !db) {
             setLoading(false);
             return;
         }
 
+        setLoading(true);
         try {
             const payoutsQuery = query(collection(db, 'payouts'), orderBy('requestedAt', 'desc'));
             const payoutsSnapshot = await getDocs(payoutsQuery);
@@ -76,13 +76,13 @@ export default function AdminPayoutsPage() {
     }, []);
 
     const handleUpdateStatus = async (payoutId: string, newStatus: 'Pago' | 'Rejeitado') => {
-        setUpdatingId(payoutId);
         if (!isFirebaseConfigured || !db) {
             toast({ variant: 'destructive', title: 'Erro de Configuração', description: 'Firebase não configurado.' });
             setUpdatingId(null);
             return;
         }
 
+        setUpdatingId(payoutId);
         try {
             const payoutRef = doc(db, 'payouts', payoutId);
             await updateDoc(payoutRef, { status: newStatus });

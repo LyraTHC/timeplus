@@ -161,16 +161,16 @@ export default function DashboardPsychologist() {
   };
 
   useEffect(() => {
-    if (user?.uid && isFirebaseConfigured) {
+    if (user?.uid && isFirebaseConfigured && db) {
       fetchDashboardData();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
   const handleCancelSession = async (sessionId: string) => {
-    setIsCanceling(sessionId);
     if (!isFirebaseConfigured || !db) return;
-    
+
+    setIsCanceling(sessionId);
     try {
         const sessionRef = doc(db, 'sessions', sessionId);
         await updateDoc(sessionRef, { status: 'Cancelada' });
