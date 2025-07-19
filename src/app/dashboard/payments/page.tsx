@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
-import { FileDown, Loader2 } from "lucide-react";
+import { FileDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Transaction = {
@@ -43,43 +43,43 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user && db) {
-        const fetchTransactions = async () => {
-            setLoading(true);
-            try {
-                const sessionsQuery = query(
-                    collection(db, "sessions"),
-                    where("participantIds", "array-contains", user.uid),
-                    orderBy("sessionTimestamp", "desc")
-                );
-                const querySnapshot = await getDocs(sessionsQuery);
-                const fetchedTransactions = querySnapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        psychologist: data.psychologistName,
-                        date: format(data.sessionTimestamp.toDate(), "dd 'de' MMMM, yyyy", { locale: ptBR }),
-                        amount: data.rate || 0,
-                        status: data.status,
-                    }
-                });
-                setTransactions(fetchedTransactions);
-            } catch (error) {
-                console.error("Error fetching transactions:", error);
-                toast({
-                    variant: "destructive",
-                    title: "Erro ao buscar pagamentos",
-                    description: "Não foi possível carregar seu histórico.",
-                });
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchTransactions();
-    } else {
+    const fetchTransactions = async () => {
+      if (!user || !db) {
         setLoading(false);
-    }
+        return;
+      }
+      setLoading(true);
+      try {
+          const sessionsQuery = query(
+              collection(db, "sessions"),
+              where("participantIds", "array-contains", user.uid),
+              orderBy("sessionTimestamp", "desc")
+          );
+          const querySnapshot = await getDocs(sessionsQuery);
+          const fetchedTransactions = querySnapshot.docs.map(doc => {
+              const data = doc.data();
+              return {
+                  id: doc.id,
+                  psychologist: data.psychologistName,
+                  date: format(data.sessionTimestamp.toDate(), "dd 'de' MMMM, yyyy", { locale: ptBR }),
+                  amount: data.rate || 0,
+                  status: data.status,
+              }
+          });
+          setTransactions(fetchedTransactions);
+      } catch (error) {
+          console.error("Error fetching transactions:", error);
+          toast({
+              variant: "destructive",
+              title: "Erro ao buscar pagamentos",
+              description: "Não foi possível carregar seu histórico.",
+          });
+      } finally {
+          setLoading(false);
+      }
+    };
+
+    fetchTransactions();
   }, [user, toast]);
 
   const handleExport = () => {

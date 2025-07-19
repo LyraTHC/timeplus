@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,7 @@ export default function AdminPayoutsPage() {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const { toast } = useToast();
     
-    const fetchPayouts = async () => {
+    const fetchPayouts = useCallback(async () => {
         if (!db) {
             setLoading(false);
             return;
@@ -68,17 +68,15 @@ export default function AdminPayoutsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [toast]);
     
     useEffect(() => {
         fetchPayouts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [fetchPayouts]);
 
     const handleUpdateStatus = async (payoutId: string, newStatus: 'Pago' | 'Rejeitado') => {
         if (!db) {
             toast({ variant: 'destructive', title: 'Erro de Configuração', description: 'Firebase não configurado.' });
-            setUpdatingId(null);
             return;
         }
 

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ArrowUpRight, Video, Star, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -106,7 +106,7 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     if (!db || !user?.uid) {
       setLoadingHistory(false);
       setLoadingUpcoming(false);
@@ -183,15 +183,12 @@ export default function Dashboard() {
       setLoadingHistory(false);
       setLoadingUpcoming(false);
     }
-  };
+  }, [user?.uid, toast]);
 
 
   useEffect(() => {
-    if (user?.uid) {
-      fetchSessions();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
+    fetchSessions();
+  }, [fetchSessions]);
 
   const handleOpenReviewDialog = (session: Session) => {
     setSelectedSession(session);

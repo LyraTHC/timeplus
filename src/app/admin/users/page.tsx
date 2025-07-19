@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { collection, getDocs, query } from "firebase/firestore";
 
@@ -127,63 +127,62 @@ export default function AdminUsersPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const fetchUsersAndFinancials = useCallback(async () => {
+      if (!db) {
+          setLoading(false);
+          return;
+      }
+
+      setLoading(true);
+      try {
+          const usersQuery = query(collection(db, "users"));
+          const sessionsQuery = query(collection(db, "sessions"));
+          
+          const [usersSnapshot, sessionsSnapshot] = await Promise.all([
+              getDocs(usersQuery),
+              getDocs(sessionsQuery)
+          ]);
+
+          const userFinancials: { [key: string]: number } = {};
+          sessionsSnapshot.forEach(doc => {
+              const session = doc.data();
+              if (session.patientId) {
+                  userFinancials[session.patientId] = (userFinancials[session.patientId] || 0) + (session.rate || 0);
+              }
+              if (session.psychologistId) {
+                  userFinancials[session.psychologistId] = (userFinancials[session.psychologistId] || 0) + (session.rate || 0);
+              }
+          });
+          
+          const fetchedUsers = usersSnapshot.docs.map(doc => {
+              const data = doc.data();
+              return {
+                  id: doc.id,
+                  name: data.name,
+                  email: data.email,
+                  role: data.role,
+                  status: 'Ativo', // Mock status for now
+                  value: userFinancials[doc.id] || 0,
+              } as User;
+          }).filter(u => u.role !== 'Admin');
+          
+          setUsers(fetchedUsers);
+
+      } catch (error) {
+          console.error("Error fetching users:", error);
+          toast({
+              variant: 'destructive',
+              title: "Erro ao buscar usuários",
+              description: "Não foi possível carregar a lista de usuários.",
+          });
+      } finally {
+          setLoading(false);
+      }
+  }, [toast]);
+
   useEffect(() => {
-    const fetchUsersAndFinancials = async () => {
-        if (!db) {
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const usersQuery = query(collection(db, "users"));
-            const sessionsQuery = query(collection(db, "sessions"));
-            
-            const [usersSnapshot, sessionsSnapshot] = await Promise.all([
-                getDocs(usersQuery),
-                getDocs(sessionsQuery)
-            ]);
-
-            const userFinancials: { [key: string]: number } = {};
-            sessionsSnapshot.forEach(doc => {
-                const session = doc.data();
-                if (session.patientId) {
-                    userFinancials[session.patientId] = (userFinancials[session.patientId] || 0) + (session.rate || 0);
-                }
-                if (session.psychologistId) {
-                    userFinancials[session.psychologistId] = (userFinancials[session.psychologistId] || 0) + (session.rate || 0);
-                }
-            });
-            
-            const fetchedUsers = usersSnapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    name: data.name,
-                    email: data.email,
-                    role: data.role,
-                    status: 'Ativo', // Mock status for now
-                    value: userFinancials[doc.id] || 0,
-                } as User;
-            }).filter(u => u.role !== 'Admin');
-            
-            setUsers(fetchedUsers);
-
-        } catch (error) {
-            console.error("Error fetching users:", error);
-            toast({
-                variant: 'destructive',
-                title: "Erro ao buscar usuários",
-                description: "Não foi possível carregar a lista de usuários.",
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
     fetchUsersAndFinancials();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchUsersAndFinancials]);
 
   const handleAction = (action: string, user: User) => {
     if (action === 'ver perfil') {

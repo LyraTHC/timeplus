@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { format } from "date-fns";
@@ -54,71 +54,71 @@ export default function AdminPatientDetailPage({ params }: { params: { id: strin
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPatientDetails = async () => {
-        if (!db) {
-            setError("Firebase não está configurado. Não é possível carregar os dados do paciente.");
-            setLoading(false);
-            return;
-        }
+  const fetchPatientDetails = useCallback(async () => {
+      if (!db) {
+          setError("Firebase não está configurado. Não é possível carregar os dados do paciente.");
+          setLoading(false);
+          return;
+      }
 
-        setLoading(true);
-        setError(null);
-        try {
-            const patientDocRef = doc(db, 'users', params.id);
-            const patientDocSnap = await getDoc(patientDocRef);
+      setLoading(true);
+      setError(null);
+      try {
+          const patientDocRef = doc(db, 'users', params.id);
+          const patientDocSnap = await getDoc(patientDocRef);
 
-            if (!patientDocSnap.exists() || patientDocSnap.data().role !== 'Paciente') {
-                throw new Error("Paciente não encontrado ou o perfil não é de um paciente.");
-            }
+          if (!patientDocSnap.exists() || patientDocSnap.data().role !== 'Paciente') {
+              throw new Error("Paciente não encontrado ou o perfil não é de um paciente.");
+          }
 
-            const patientInfo = patientDocSnap.data();
+          const patientInfo = patientDocSnap.data();
 
-            const sessionsQuery = query(
-                collection(db, 'sessions'),
-                where('patientId', '==', params.id),
-                orderBy('sessionTimestamp', 'desc')
-            );
-            const sessionsSnapshot = await getDocs(sessionsQuery);
+          const sessionsQuery = query(
+              collection(db, 'sessions'),
+              where('patientId', '==', params.id),
+              orderBy('sessionTimestamp', 'desc')
+          );
+          const sessionsSnapshot = await getDocs(sessionsQuery);
 
-            const sessionHistory = sessionsSnapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    date: format(data.sessionTimestamp.toDate(), "dd 'de' MMMM, yyyy", { locale: ptBR }),
-                    psychologist: data.psychologistName,
-                    value: data.rate,
-                    status: data.status,
-                };
-            });
+          const sessionHistory = sessionsSnapshot.docs.map(doc => {
+              const data = doc.data();
+              return {
+                  id: doc.id,
+                  date: format(data.sessionTimestamp.toDate(), "dd 'de' MMMM, yyyy", { locale: ptBR }),
+                  psychologist: data.psychologistName,
+                  value: data.rate,
+                  status: data.status,
+              };
+          });
 
-            const totalSpent = sessionHistory.reduce((acc, session) => acc + session.value, 0);
+          const totalSpent = sessionHistory.reduce((acc, session) => acc + session.value, 0);
 
-            setPatientData({
-                id: patientInfo.uid,
-                name: patientInfo.name,
-                email: patientInfo.email,
-                avatar: "https://placehold.co/128x128.png",
-                avatarHint: "man face",
-                status: "Ativo", // Mock status
-                memberSince: patientInfo.createdAt ? format(patientInfo.createdAt.toDate(), "dd 'de' MMMM, yyyy", { locale: ptBR }) : 'Data indisponível',
-                stats: {
-                    totalSessions: sessionHistory.length,
-                    totalSpent: totalSpent,
-                },
-                sessionHistory: sessionHistory,
-            });
+          setPatientData({
+              id: patientInfo.uid,
+              name: patientInfo.name,
+              email: patientInfo.email,
+              avatar: "https://placehold.co/128x128.png",
+              avatarHint: "man face",
+              status: "Ativo", // Mock status
+              memberSince: patientInfo.createdAt ? format(patientInfo.createdAt.toDate(), "dd 'de' MMMM, yyyy", { locale: ptBR }) : 'Data indisponível',
+              stats: {
+                  totalSessions: sessionHistory.length,
+                  totalSpent: totalSpent,
+              },
+              sessionHistory: sessionHistory,
+          });
 
-        } catch (err: any) {
-            console.error("Error fetching patient details:", err);
-            setError(err.message || "Ocorreu um erro ao buscar os dados do paciente.");
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    fetchPatientDetails();
+      } catch (err: any) {
+          console.error("Error fetching patient details:", err);
+          setError(err.message || "Ocorreu um erro ao buscar os dados do paciente.");
+      } finally {
+          setLoading(false);
+      }
   }, [params.id]);
+  
+  useEffect(() => {
+    fetchPatientDetails();
+  }, [fetchPatientDetails]);
 
 
   if (loading) {

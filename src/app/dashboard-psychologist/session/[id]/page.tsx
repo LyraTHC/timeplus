@@ -245,8 +245,8 @@ export default function PsychologistSessionRoomPage() {
   const [loadingSession, setLoadingSession] = useState(true);
 
   useEffect(() => {
-    if (user && params.id && db) {
-      const fetchSessionData = async () => {
+    const fetchSessionData = async () => {
+      if (user && params.id && db) {
         setLoadingSession(true);
         const sessionRef = doc(db, 'sessions', params.id as string);
         const sessionSnap = await getDoc(sessionRef);
@@ -259,12 +259,12 @@ export default function PsychologistSessionRoomPage() {
           router.push('/dashboard-psychologist');
         }
         setLoadingSession(false);
-      };
-      fetchSessionData();
-    } else {
-        setLoadingSession(false);
-    }
-  }, [user, params.id, router, toast, db]);
+      } else {
+          setLoadingSession(false);
+      }
+    };
+    fetchSessionData();
+  }, [user, params.id, router, toast]);
 
   if (loading || loadingSession || !user || !userData || !sessionData) {
     return (

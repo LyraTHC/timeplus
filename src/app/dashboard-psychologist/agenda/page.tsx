@@ -32,36 +32,36 @@ export default function AgendaPage() {
     const { user } = useAuth();
     
     useEffect(() => {
-        if (user && db) {
-          const fetchAppointments = async () => {
-            setLoading(true);
-            try {
-                const sessionsCollection = collection(db, "sessions");
-                const q = query(sessionsCollection, where("participantIds", "array-contains", user.uid));
-                const querySnapshot = await getDocs(q);
-                
-                const fetchedAppointments: Appointment[] = querySnapshot.docs.map(doc => {
-                  const data = doc.data();
-                  return {
-                    id: doc.id,
-                    patient: data.patientName,
-                    date: data.sessionTimestamp.toDate(),
-                  };
-                });
-    
-                setAppointments(fetchedAppointments);
-            } catch (error) {
-                console.error("Error fetching appointments:", error);
-            } finally {
-                setLoading(false);
-            }
-          };
+        const fetchAppointments = async () => {
+          if (!user || !db) {
+            setLoading(false);
+            setAppointments([]);
+            return;
+          }
+          setLoading(true);
+          try {
+              const sessionsCollection = collection(db, "sessions");
+              const q = query(sessionsCollection, where("participantIds", "array-contains", user.uid));
+              const querySnapshot = await getDocs(q);
+              
+              const fetchedAppointments: Appointment[] = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                  id: doc.id,
+                  patient: data.patientName,
+                  date: data.sessionTimestamp.toDate(),
+                };
+              });
+  
+              setAppointments(fetchedAppointments);
+          } catch (error) {
+              console.error("Error fetching appointments:", error);
+          } finally {
+              setLoading(false);
+          }
+        };
 
-          fetchAppointments();
-        } else {
-          setLoading(false);
-          setAppointments([]);
-        }
+        fetchAppointments();
     }, [user]);
 
     const appointmentDates = useMemo(() => {

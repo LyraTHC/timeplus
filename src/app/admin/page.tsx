@@ -100,7 +100,7 @@ export default function AdminDashboardPage() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   }
 
-  const StatCard = ({ title, value, description, icon: Icon, loading, isCurrency = true }: any) => (
+  const StatCard = ({ title, value, description, icon: Icon, loading, isCurrency = true }: { title: string; value: number | string; description: string; icon: React.ElementType; loading: boolean; isCurrency?: boolean; }) => (
     <Card className="hover:shadow-md transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -114,7 +114,7 @@ export default function AdminDashboardPage() {
                 </>
             ) : (
                 <>
-                    <div className="text-2xl font-bold">{isCurrency ? formatCurrency(value) : value}</div>
+                    <div className="text-2xl font-bold">{isCurrency ? formatCurrency(value as number) : value}</div>
                     {description && <p className="text-xs text-muted-foreground">{description}</p>}
                 </>
             )}

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DollarSign, Users, Calendar, Video, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ export default function DashboardPsychologist() {
     return () => clearInterval(timer);
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     if (!db || !user?.uid) {
       setLoading(false);
       return;
@@ -158,14 +158,11 @@ export default function DashboardPsychologist() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast, user?.uid]);
 
   useEffect(() => {
-    if (user?.uid) {
-      fetchDashboardData();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const handleCancelSession = async (sessionId: string) => {
     if (!db) return;
@@ -197,7 +194,7 @@ export default function DashboardPsychologist() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   }
 
-  const StatCard = ({ title, value, description, icon: Icon, loading, isCurrency = false }: any) => (
+  const StatCard = ({ title, value, description, icon: Icon, loading, isCurrency = false }: { title: string; value: number | string; description: string; icon: React.ElementType; loading: boolean; isCurrency?: boolean; }) => (
     <Card className="hover:shadow-md transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -211,7 +208,7 @@ export default function DashboardPsychologist() {
                 </>
             ) : (
                 <>
-                    <div className="text-2xl font-bold">{isCurrency ? formatCurrency(value) : value}</div>
+                    <div className="text-2xl font-bold">{isCurrency ? formatCurrency(value as number) : value}</div>
                     {description && <p className="text-xs text-muted-foreground">{description}</p>}
                 </>
             )}

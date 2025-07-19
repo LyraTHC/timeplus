@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from "@/components/ui/badge";
@@ -57,7 +57,7 @@ export default function FinancePage() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   }
   
-  const fetchFinancials = async () => {
+  const fetchFinancials = useCallback(async () => {
       if (!db || !user?.uid) {
         setLoading(false);
         return;
@@ -114,14 +114,11 @@ export default function FinancePage() {
       } finally {
         setLoading(false);
       }
-    };
+    }, [toast, user?.uid]);
 
   useEffect(() => {
-    if (user?.uid) {
-        fetchFinancials();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
+    fetchFinancials();
+  }, [fetchFinancials]);
 
   const handleRequestPayout = async () => {
     if (balance <= 0 || !user || !db || !userData) return;

@@ -40,52 +40,53 @@ export default function PacientesPage() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user?.uid && db) {
-      const fetchPatients = async () => {
-        setLoading(true);
-        try {
-            const sessionsCollection = collection(db, "sessions");
-            const q = query(
-              sessionsCollection,
-              where("psychologistId", "==", user.uid),
-              orderBy("sessionTimestamp", "desc")
-            );
-            const querySnapshot = await getDocs(q);
-            
-            const patientsMap = new Map<string, Patient>();
-            const userPromises = [];
+    const fetchPatients = async () => {
+      if (!user?.uid || !db) {
+        setLoading(false);
+        setPatients([]);
+        return;
+      }
 
-            for (const sessionDoc of querySnapshot.docs) {
-                const data = sessionDoc.data();
-                if (!patientsMap.has(data.patientId)) {
-                    const patientPromise = getDocs(query(collection(db, 'users'), where('uid', '==', data.patientId))).then(userSnap => {
-                        const patientData = userSnap.docs[0]?.data();
-                        patientsMap.set(data.patientId, {
-                            id: data.patientId,
-                            name: data.patientName,
-                            avatarUrl: patientData?.avatarUrl,
-                            lastSession: format(data.sessionTimestamp.toDate(), "d 'de' MMMM, yyyy", { locale: ptBR }),
-                        });
-                    });
-                    userPromises.push(patientPromise);
-                }
-            }
-            await Promise.all(userPromises);
-    
-            setPatients(Array.from(patientsMap.values()));
+      setLoading(true);
+      try {
+          const sessionsCollection = collection(db, "sessions");
+          const q = query(
+            sessionsCollection,
+            where("psychologistId", "==", user.uid),
+            orderBy("sessionTimestamp", "desc")
+          );
+          const querySnapshot = await getDocs(q);
+          
+          const patientsMap = new Map<string, Patient>();
+          const userPromises = [];
 
-        } catch(error) {
-            console.error("Error fetching patients list:", error);
-        } finally {
-            setLoading(false);
-        }
-      };
+          for (const sessionDoc of querySnapshot.docs) {
+              const data = sessionDoc.data();
+              if (!patientsMap.has(data.patientId)) {
+                  const patientPromise = getDocs(query(collection(db, 'users'), where('uid', '==', data.patientId))).then(userSnap => {
+                      const patientData = userSnap.docs[0]?.data();
+                      patientsMap.set(data.patientId, {
+                          id: data.patientId,
+                          name: data.patientName,
+                          avatarUrl: patientData?.avatarUrl,
+                          lastSession: format(data.sessionTimestamp.toDate(), "d 'de' MMMM, yyyy", { locale: ptBR }),
+                      });
+                  });
+                  userPromises.push(patientPromise);
+              }
+          }
+          await Promise.all(userPromises);
+  
+          setPatients(Array.from(patientsMap.values()));
 
-      fetchPatients();
-    } else {
-      setLoading(false);
-      setPatients([]);
-    }
+      } catch(error) {
+          console.error("Error fetching patients list:", error);
+      } finally {
+          setLoading(false);
+      }
+    };
+
+    fetchPatients();
   }, [user?.uid]);
 
 

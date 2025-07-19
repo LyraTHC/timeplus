@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -68,70 +68,68 @@ export default function PatientDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchPatientData = useCallback(async () => {
     if (!user || !db) {
         setLoading(false);
         return;
     }
+    setLoading(true);
+    setError(null);
+    try {
+      const patientDocRef = doc(db, "users", params.id);
+      const patientDocSnap = await getDoc(patientDocRef);
 
-    const fetchPatientData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const patientDocRef = doc(db, "users", params.id);
-        const patientDocSnap = await getDoc(patientDocRef);
+      if (!patientDocSnap.exists() || patientDocSnap.data().role !== 'Paciente') {
+        throw new Error("Paciente não encontrado ou o perfil não é de um paciente.");
+      }
+      const patientInfo = patientDocSnap.data();
 
-        if (!patientDocSnap.exists() || patientDocSnap.data().role !== 'Paciente') {
-          throw new Error("Paciente não encontrado ou o perfil não é de um paciente.");
-        }
-        const patientInfo = patientDocSnap.data();
-
-        const sessionsCollection = collection(db, "sessions");
-        const q = query(
-          sessionsCollection,
-          where("participantIds", "array-contains", user.uid),
-          orderBy("sessionTimestamp", "desc")
-        );
-        const querySnapshot = await getDocs(q);
-        
-        const sessionHistory = querySnapshot.docs
-          .filter(doc => doc.data().participantIds.includes(params.id))
-          .map(doc => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              date: format(data.sessionTimestamp.toDate(), "d 'de' MMMM, yyyy", { locale: ptBR }),
-              topic: `Sessão de ${format(data.sessionTimestamp.toDate(), "PPP", { locale: ptBR })}`,
-              status: data.status,
-              note: data.psychologistNote || null,
-            } as SessionHistoryItem;
-          });
-
-        setPatientData({
-          id: patientInfo.uid,
-          name: patientInfo.name,
-          email: patientInfo.email,
-          avatar: "https://placehold.co/128x128.png",
-          avatarHint: "man face",
-          stats: {
-            totalSessions: sessionHistory.length,
-            nextSession: "A definir",
-            progress: 75,
-          },
-          sessionHistory,
+      const sessionsCollection = collection(db, "sessions");
+      const q = query(
+        sessionsCollection,
+        where("participantIds", "array-contains", user.uid),
+        orderBy("sessionTimestamp", "desc")
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const sessionHistory = querySnapshot.docs
+        .filter(doc => doc.data().participantIds.includes(params.id))
+        .map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            date: format(data.sessionTimestamp.toDate(), "d 'de' MMMM, yyyy", { locale: ptBR }),
+            topic: `Sessão de ${format(data.sessionTimestamp.toDate(), "PPP", { locale: ptBR })}`,
+            status: data.status,
+            note: data.psychologistNote || null,
+          } as SessionHistoryItem;
         });
 
-      } catch (err: any) {
-        console.error("Error fetching patient details:", err);
-        setError(err.message || "Ocorreu um erro ao buscar os dados do paciente.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchPatientData();
+      setPatientData({
+        id: patientInfo.uid,
+        name: patientInfo.name,
+        email: patientInfo.email,
+        avatar: "https://placehold.co/128x128.png",
+        avatarHint: "man face",
+        stats: {
+          totalSessions: sessionHistory.length,
+          nextSession: "A definir",
+          progress: 75,
+        },
+        sessionHistory,
+      });
 
+    } catch (err: any) {
+      console.error("Error fetching patient details:", err);
+      setError(err.message || "Ocorreu um erro ao buscar os dados do paciente.");
+    } finally {
+      setLoading(false);
+    }
   }, [user, params.id]);
+
+  useEffect(() => {
+    fetchPatientData();
+  }, [fetchPatientData]);
 
   if (loading) {
     return (

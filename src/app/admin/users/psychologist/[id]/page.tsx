@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
@@ -53,77 +53,77 @@ export default function AdminPsychologistDetailPage({ params }: { params: { id: 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPsychologistDetails = async () => {
-        if (!db) {
-            setError("Firebase não está configurado. Não é possível carregar os dados.");
-            setLoading(false);
-            return;
-        }
-        
-        setLoading(true);
-        setError(null);
-        try {
-            const psychologistDocRef = doc(db, 'users', params.id);
-            const psychologistDocSnap = await getDoc(psychologistDocRef);
-            
-            if (!psychologistDocSnap.exists() || psychologistDocSnap.data().role !== 'Psicólogo') {
-                throw new Error("Psicólogo não encontrado ou perfil inválido.");
-            }
-            const psychoInfo = psychologistDocSnap.data();
+  const fetchPsychologistDetails = useCallback(async () => {
+      if (!db) {
+          setError("Firebase não está configurado. Não é possível carregar os dados.");
+          setLoading(false);
+          return;
+      }
+      
+      setLoading(true);
+      setError(null);
+      try {
+          const psychologistDocRef = doc(db, 'users', params.id);
+          const psychologistDocSnap = await getDoc(psychologistDocRef);
+          
+          if (!psychologistDocSnap.exists() || psychologistDocSnap.data().role !== 'Psicólogo') {
+              throw new Error("Psicólogo não encontrado ou perfil inválido.");
+          }
+          const psychoInfo = psychologistDocSnap.data();
 
-            const sessionsQuery = query(collection(db, 'sessions'), where('psychologistId', '==', params.id));
-            const sessionsSnapshot = await getDocs(sessionsQuery);
+          const sessionsQuery = query(collection(db, 'sessions'), where('psychologistId', '==', params.id));
+          const sessionsSnapshot = await getDocs(sessionsQuery);
 
-            const sessionsData = sessionsSnapshot.docs.map(d => d.data());
+          const sessionsData = sessionsSnapshot.docs.map(d => d.data());
 
-            const totalRevenue = sessionsData.reduce((acc, s) => acc + (s.rate || 0), 0);
-            const uniquePatientIds = new Set(sessionsData.map(s => s.patientId));
+          const totalRevenue = sessionsData.reduce((acc, s) => acc + (s.rate || 0), 0);
+          const uniquePatientIds = new Set(sessionsData.map(s => s.patientId));
 
-            const patientMap = new Map();
-            sessionsData.forEach(s => {
-                const sessionDate = s.sessionTimestamp.toDate();
-                if (!patientMap.has(s.patientId) || sessionDate > patientMap.get(s.patientId).lastSessionDate) {
-                    patientMap.set(s.patientId, {
-                        id: s.patientId,
-                        name: s.patientName,
-                        lastSession: format(sessionDate, "dd 'de' MMMM, yyyy", { locale: ptBR }),
-                        lastSessionDate: sessionDate
-                    });
-                }
-            });
-            const recentPatients = Array.from(patientMap.values()).sort((a,b) => b.lastSessionDate - a.lastSessionDate).slice(0, 5);
+          const patientMap = new Map();
+          sessionsData.forEach(s => {
+              const sessionDate = s.sessionTimestamp.toDate();
+              if (!patientMap.has(s.patientId) || sessionDate > patientMap.get(s.patientId).lastSessionDate) {
+                  patientMap.set(s.patientId, {
+                      id: s.patientId,
+                      name: s.patientName,
+                      lastSession: format(sessionDate, "dd 'de' MMMM, yyyy", { locale: ptBR }),
+                      lastSessionDate: sessionDate
+                  });
+              }
+          });
+          const recentPatients = Array.from(patientMap.values()).sort((a,b) => b.lastSessionDate - a.lastSessionDate).slice(0, 5);
 
 
-            setPsychologistData({
-                id: psychoInfo.uid,
-                name: psychoInfo.name,
-                email: psychoInfo.email,
-                title: psychoInfo.professionalProfile?.title || "Psicólogo(a)",
-                specialties: psychoInfo.professionalProfile?.specialties || [],
-                image: "https://placehold.co/400x400.png",
-                imageHint: "woman psychologist",
-                status: "Ativo", // Mock status
-                bio: psychoInfo.professionalProfile?.bio || "Nenhuma biografia fornecida.",
-                stats: {
-                    totalRevenue: totalRevenue,
-                    platformFee: totalRevenue * 0.15, // Assumes 15% fee
-                    totalSessions: sessionsData.length,
-                    totalPatients: uniquePatientIds.size,
-                },
-                recentPatients,
-            });
+          setPsychologistData({
+              id: psychoInfo.uid,
+              name: psychoInfo.name,
+              email: psychoInfo.email,
+              title: psychoInfo.professionalProfile?.title || "Psicólogo(a)",
+              specialties: psychoInfo.professionalProfile?.specialties || [],
+              image: "https://placehold.co/400x400.png",
+              imageHint: "woman psychologist",
+              status: "Ativo", // Mock status
+              bio: psychoInfo.professionalProfile?.bio || "Nenhuma biografia fornecida.",
+              stats: {
+                  totalRevenue: totalRevenue,
+                  platformFee: totalRevenue * 0.15, // Assumes 15% fee
+                  totalSessions: sessionsData.length,
+                  totalPatients: uniquePatientIds.size,
+              },
+              recentPatients,
+          });
 
-        } catch (err: any) {
-            console.error("Error fetching psychologist details:", err);
-            setError(err.message || "Ocorreu um erro ao buscar os dados.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    fetchPsychologistDetails();
+      } catch (err: any) {
+          console.error("Error fetching psychologist details:", err);
+          setError(err.message || "Ocorreu um erro ao buscar os dados.");
+      } finally {
+          setLoading(false);
+      }
   }, [params.id]);
+  
+  useEffect(() => {
+    fetchPsychologistDetails();
+  }, [fetchPsychologistDetails]);
 
 
   if (loading) {
