@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
                     adminDb.collection("users").doc(psychologistId).get(),
                 ]);
 
-                if (!patientDoc.exists() || !psychologistDoc.exists()) {
+                if (!patientDoc.exists || !psychologistDoc.exists) {
                     throw new Error(`Patient or psychologist not found for session ${sessionDocId}`);
                 }
 
