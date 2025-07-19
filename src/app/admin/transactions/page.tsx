@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -49,7 +48,7 @@ export default function AdminTransactionsPage() {
         const fetchTransactions = async () => {
             setLoading(true);
             try {
-                const sessionsQuery = query(collection(db, 'sessions'), orderBy('sessionTimestamp', 'desc'));
+                const sessionsQuery = query(collection(db!, 'sessions'), orderBy('sessionTimestamp', 'desc'));
                 const sessionsSnapshot = await getDocs(sessionsQuery);
 
                 const sessionTransactionsSource = sessionsSnapshot.docs.map(doc => {
@@ -64,7 +63,7 @@ export default function AdminTransactionsPage() {
                         status: data.status,
                     };
                 });
-                
+
                 const formattedTransactions = sessionTransactionsSource.map(t => ({
                     ...t,
                     date: format(t.dateObject, "dd 'de' MMMM, yyyy", { locale: ptBR }),
