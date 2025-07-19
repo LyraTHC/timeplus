@@ -182,7 +182,8 @@ export default function AdminUsersPage() {
     };
 
     fetchUsersAndFinancials();
-  }, [toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAction = (action: string, user: User) => {
     if (action === 'ver perfil') {
