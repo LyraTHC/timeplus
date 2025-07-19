@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -87,7 +88,7 @@ export default function DashboardLayout({
   }
   
   const displayName = userData?.name || 'Paciente';
-  const displayInitials = displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() || 'PA';
+  const displayInitials = displayName?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || 'PA';
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">

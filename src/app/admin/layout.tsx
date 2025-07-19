@@ -83,7 +83,7 @@ export default function AdminLayout({
   }
   
   const displayName = userData?.name || 'Admin';
-  const displayInitials = displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() || 'AD';
+  const displayInitials = displayName?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || 'AD';
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
