@@ -13,7 +13,6 @@ import {
   useRoomContext,
   useRemoteParticipants,
 } from '@livekit/components-react';
-import { ConnectionState } from 'livekit-client';
 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -40,7 +39,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
-    if (room.state === ConnectionState.Connected && isPsychologistPresent) {
+    if (room.state === 'connected' && isPsychologistPresent) {
       interval = setInterval(() => {
         setSessionTime(prevTime => prevTime + 1);
       }, 1000);
@@ -70,7 +69,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
     room.disconnect();
   }
 
-  if (room.state !== ConnectionState.Connected) {
+  if (room.state !== 'connected') {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <div className="flex flex-col items-center gap-2">
