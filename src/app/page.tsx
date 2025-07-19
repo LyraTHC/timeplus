@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Logo } from "@/components/Logo";
 import { useToast } from "@/hooks/use-toast";
-import { auth, db, isFirebaseConfigured } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { validateCPF } from "@/lib/cpf-validator";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
@@ -152,7 +152,7 @@ export default function AuthenticationPage() {
       return;
     }
 
-    if (!isFirebaseConfigured || !auth || !db) {
+    if (!auth || !db) {
       toast({
         variant: "destructive",
         title: "Firebase não configurado",
@@ -211,7 +211,7 @@ export default function AuthenticationPage() {
   const handleSignUp = async (data: PatientSignupFormValues | PsychologistSignupFormValues, role: "patient" | "psychologist") => {
     setIsLoading(true);
     
-    if (!isFirebaseConfigured || !db || !auth) {
+    if (!db || !auth) {
         toast({
             variant: "destructive",
             title: "Firebase não configurado",

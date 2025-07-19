@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
 type Transaction = {
@@ -40,15 +41,15 @@ export default function AdminTransactionsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!isFirebaseConfigured || !db) {
-            setLoading(false);
-            return;
-        }
-
         const fetchTransactions = async () => {
+            if (!db) {
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             try {
-                const sessionsQuery = query(collection(db!, 'sessions'), orderBy('sessionTimestamp', 'desc'));
+                const sessionsQuery = query(collection(db, 'sessions'), orderBy('sessionTimestamp', 'desc'));
                 const sessionsSnapshot = await getDocs(sessionsQuery);
 
                 const sessionTransactionsSource = sessionsSnapshot.docs.map(doc => {

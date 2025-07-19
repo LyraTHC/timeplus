@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
 
 type Transaction = {
@@ -42,16 +43,17 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
-        setLoading(false);
-        return;
-    }
-
     const fetchData = async () => {
+        if (!db) {
+            setLoading(false);
+            console.error("Firestore DB is not available.");
+            return;
+        }
+
         setLoading(true);
         try {
-            const sessionsQuery = query(collection(db!, "sessions"), orderBy('sessionTimestamp', 'desc'));
-            const usersQuery = query(collection(db!, "users"), where('role', '!=', 'Admin'));
+            const sessionsQuery = query(collection(db, "sessions"), orderBy('sessionTimestamp', 'desc'));
+            const usersQuery = query(collection(db, "users"), where('role', '!=', 'Admin'));
 
             const [sessionsSnapshot, usersSnapshot] = await Promise.all([
                 getDocs(sessionsQuery),

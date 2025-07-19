@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MoreHorizontal, Users, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type User = {
@@ -128,12 +128,12 @@ export default function AdminUsersPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
-        setLoading(false);
-        return;
-    }
-
     const fetchUsersAndFinancials = async () => {
+        if (!db) {
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         try {
             const usersQuery = query(collection(db, "users"));

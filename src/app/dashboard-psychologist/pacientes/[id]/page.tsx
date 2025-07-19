@@ -28,7 +28,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -69,13 +69,7 @@ export default function PatientDetailPage({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
-      setError("Firebase não está configurado. Não é possível buscar dados do paciente.");
-      setLoading(false);
-      return;
-    }
-
-    if (!user) {
+    if (!user || !db) {
         setLoading(false);
         return;
     }

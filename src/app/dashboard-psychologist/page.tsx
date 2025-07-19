@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAuth } from "@/hooks/useAuth";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, orderBy, doc, updateDoc } from "firebase/firestore";
 import { format, isSameMonth, isAfter, addMinutes, isBefore, subMinutes } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -72,7 +72,7 @@ export default function DashboardPsychologist() {
   }, []);
 
   const fetchDashboardData = async () => {
-    if (!isFirebaseConfigured || !db || !user?.uid) {
+    if (!db || !user?.uid) {
       setLoading(false);
       return;
     }
@@ -161,14 +161,14 @@ export default function DashboardPsychologist() {
   };
 
   useEffect(() => {
-    if (user?.uid && isFirebaseConfigured && db) {
+    if (user?.uid) {
       fetchDashboardData();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
 
   const handleCancelSession = async (sessionId: string) => {
-    if (!isFirebaseConfigured || !db) return;
+    if (!db) return;
 
     setIsCanceling(sessionId);
     try {

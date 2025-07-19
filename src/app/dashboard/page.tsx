@@ -45,7 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, orderBy, doc, updateDoc } from "firebase/firestore";
 import { ptBR } from 'date-fns/locale';
 import { format, isAfter, addMinutes, subMinutes, isBefore } from 'date-fns';
@@ -107,7 +107,7 @@ export default function Dashboard() {
   }, []);
 
   const fetchSessions = async () => {
-    if (!isFirebaseConfigured || !db || !user?.uid) {
+    if (!db || !user?.uid) {
       setLoadingHistory(false);
       setLoadingUpcoming(false);
       return;
@@ -187,11 +187,8 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    if (user?.uid && isFirebaseConfigured && db) {
+    if (user?.uid) {
       fetchSessions();
-    } else if (!isFirebaseConfigured || !db) {
-        setLoadingHistory(false);
-        setLoadingUpcoming(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid]);
@@ -214,38 +211,36 @@ export default function Dashboard() {
       return;
     }
 
-    if (isFirebaseConfigured && db) {
-      try {
-        const sessionRef = doc(db, 'sessions', selectedSession.id);
-        await updateDoc(sessionRef, {
-            reviewed: true,
-            rating: rating,
-            reviewComment: comment,
-        });
-      } catch (error) {
-        console.error("Error updating session review:", error);
-        toast({
-            variant: "destructive",
-            title: "Erro ao Enviar Avaliação",
-            description: "Não foi possível salvar sua avaliação. Tente novamente.",
-        });
-        return;
-      }
-    }
-    
-    toast({
-        title: "Avaliação Enviada!",
-        description: "Obrigado pelo seu feedback. Ele ajuda outros pacientes a tomar decisões."
-    });
-    
-    setSessions(sessions.map(s => s.id === selectedSession.id ? { ...s, reviewed: true } : s));
+    try {
+      const sessionRef = doc(db, 'sessions', selectedSession.id);
+      await updateDoc(sessionRef, {
+          reviewed: true,
+          rating: rating,
+          reviewComment: comment,
+      });
+      
+      toast({
+          title: "Avaliação Enviada!",
+          description: "Obrigado pelo seu feedback. Ele ajuda outros pacientes a tomar decisões."
+      });
+      
+      setSessions(sessions.map(s => s.id === selectedSession.id ? { ...s, reviewed: true } : s));
 
-    setOpenReviewDialog(false);
-    setSelectedSession(null);
+      setOpenReviewDialog(false);
+      setSelectedSession(null);
+
+    } catch (error) {
+      console.error("Error updating session review:", error);
+      toast({
+          variant: "destructive",
+          title: "Erro ao Enviar Avaliação",
+          description: "Não foi possível salvar sua avaliação. Tente novamente.",
+      });
+    }
   };
 
   const handleCancelSession = async (sessionId: string) => {
-    if (!isFirebaseConfigured || !db) return;
+    if (!db) return;
     
     setIsCanceling(sessionId);
     try {

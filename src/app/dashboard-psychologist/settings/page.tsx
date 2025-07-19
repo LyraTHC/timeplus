@@ -25,7 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { db, storage, isFirebaseConfigured } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { Camera, Loader2 } from 'lucide-react';
@@ -243,8 +243,8 @@ export default function SettingsPage() {
 
 
   const handleSave = async (section: string, dataToSave: object, savingSetter: (isSaving: boolean) => void) => {
-    if (!isFirebaseConfigured || !db || !user) {
-        toast({ title: "Modo Demonstração", description: `As alterações em ${section} foram salvas localmente.` });
+    if (!db || !user) {
+        toast({ title: "Erro de Conexão", description: `Não foi possível salvar ${section}. Verifique sua conexão.` });
         return;
     }
 

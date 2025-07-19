@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { FileDown, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,12 +43,7 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
-        setLoading(false);
-        return;
-    }
-
-    if (user) {
+    if (user && db) {
         const fetchTransactions = async () => {
             setLoading(true);
             try {

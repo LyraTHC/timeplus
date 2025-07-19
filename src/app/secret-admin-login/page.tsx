@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import { useToast } from "@/hooks/use-toast";
-import { auth, isFirebaseConfigured } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
       return;
     }
 
-    if (!isFirebaseConfigured || !auth) {
+    if (!auth) {
         toast({
             variant: "destructive",
             title: "Firebase não configurado",

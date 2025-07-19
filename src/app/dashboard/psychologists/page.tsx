@@ -42,7 +42,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { app, isFirebaseConfigured } from '@/lib/firebase';
+import { app } from '@/lib/firebase';
 
 const dayIndexToKey = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
 
@@ -85,7 +85,7 @@ export default function PsychologistsPage() {
     const fetchPsychologists = async () => {
       setLoading(true);
       setError(null);
-      if (!isFirebaseConfigured || !app) {
+      if (!app) {
         setError("Firebase não está configurado. Não é possível buscar psicólogos.");
         setLoading(false);
         return;

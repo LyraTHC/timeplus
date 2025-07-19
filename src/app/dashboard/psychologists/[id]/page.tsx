@@ -33,7 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { app, isFirebaseConfigured, db } from "@/lib/firebase";
+import { app, db } from "@/lib/firebase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -111,7 +111,7 @@ export default function PsychologistDetailPage() {
         setLoading(true);
         setError(null);
 
-        if (!isFirebaseConfigured || !app || !params.id) {
+        if (!app || !params.id) {
             setError("A aplicação não está configurada corretamente.");
             setLoading(false);
             return;
@@ -182,7 +182,7 @@ export default function PsychologistDetailPage() {
   }, [currentPixSessionId, router, toast]);
 
   const handleCreateSession = async (paymentDetails: { paymentMethod: string; id?: string; status?: string; }) => {
-    if (!selectedDate || !selectedTime || !psychologist || !app || !user || !userData) {
+    if (!selectedDate || !selectedTime || !psychologist || !app || !user || !userData || !db) {
         toast({ variant: "destructive", title: "Erro Interno", description: "Dados da sessão ou do psicólogo ausentes para criar a sessão." });
         return null;
     }
@@ -254,6 +254,7 @@ export default function PsychologistDetailPage() {
                     psychologistId: psychologist.id,
                     sessionTimestampMillis: sessionTimestampMillis,
                     payerEmail: userData.email,
+                    patientId: user.uid, // Correctly pass patientId
                 }) 
             });
             const data = await response.json();

@@ -16,7 +16,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
-import { db, isFirebaseConfigured } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
 type Appointment = {
@@ -32,12 +32,7 @@ export default function AgendaPage() {
     const { user } = useAuth();
     
     useEffect(() => {
-        if (!isFirebaseConfigured || !db) {
-          setLoading(false);
-          return;
-        }
-
-        if (user) {
+        if (user && db) {
           const fetchAppointments = async () => {
             setLoading(true);
             try {
@@ -63,7 +58,7 @@ export default function AgendaPage() {
           };
 
           fetchAppointments();
-        } else if (!user) {
+        } else {
           setLoading(false);
           setAppointments([]);
         }

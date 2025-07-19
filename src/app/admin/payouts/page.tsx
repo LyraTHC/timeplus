@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/firestore";
 import { Check, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -42,7 +42,7 @@ export default function AdminPayoutsPage() {
     const { toast } = useToast();
     
     const fetchPayouts = async () => {
-        if (!isFirebaseConfigured || !db) {
+        if (!db) {
             setLoading(false);
             return;
         }
@@ -76,7 +76,7 @@ export default function AdminPayoutsPage() {
     }, []);
 
     const handleUpdateStatus = async (payoutId: string, newStatus: 'Pago' | 'Rejeitado') => {
-        if (!isFirebaseConfigured || !db) {
+        if (!db) {
             toast({ variant: 'destructive', title: 'Erro de Configuração', description: 'Firebase não configurado.' });
             setUpdatingId(null);
             return;

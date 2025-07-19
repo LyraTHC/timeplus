@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -54,13 +54,13 @@ export default function AdminPsychologistDetailPage({ params }: { params: { id: 
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
-        setError("Firebase não está configurado. Não é possível carregar os dados.");
-        setLoading(false);
-        return;
-    }
-    
     const fetchPsychologistDetails = async () => {
+        if (!db) {
+            setError("Firebase não está configurado. Não é possível carregar os dados.");
+            setLoading(false);
+            return;
+        }
+        
         setLoading(true);
         setError(null);
         try {

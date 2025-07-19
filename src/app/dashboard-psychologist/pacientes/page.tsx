@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { db, isFirebaseConfigured } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -40,12 +40,7 @@ export default function PacientesPage() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
-      setLoading(false);
-      return;
-    }
-
-    if (user?.uid && isFirebaseConfigured) {
+    if (user?.uid && db) {
       const fetchPatients = async () => {
         setLoading(true);
         try {
@@ -87,11 +82,11 @@ export default function PacientesPage() {
       };
 
       fetchPatients();
-    } else if (!user?.uid) {
+    } else {
       setLoading(false);
       setPatients([]);
     }
-  }, [user?.uid, isFirebaseConfigured, db]);
+  }, [user?.uid]);
 
 
   const handleRowClick = (patientId: string) => {

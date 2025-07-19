@@ -33,7 +33,7 @@ import {
 import { Download, CreditCard, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, orderBy, Timestamp, addDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -58,7 +58,7 @@ export default function FinancePage() {
   }
   
   const fetchFinancials = async () => {
-      if (!isFirebaseConfigured || !db || !user?.uid) {
+      if (!db || !user?.uid) {
         setLoading(false);
         return;
       }
@@ -117,11 +117,11 @@ export default function FinancePage() {
     };
 
   useEffect(() => {
-    if (user?.uid && isFirebaseConfigured && db) {
+    if (user?.uid) {
         fetchFinancials();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, isFirebaseConfigured]);
+  }, [user?.uid]);
 
   const handleRequestPayout = async () => {
     if (balance <= 0 || !user || !db || !userData) return;

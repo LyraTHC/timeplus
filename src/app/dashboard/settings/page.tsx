@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Camera, Loader2 } from "lucide-react";
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from "@/hooks/useAuth";
-import { db, storage, isFirebaseConfigured } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
 import { doc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -134,8 +134,8 @@ export default function SettingsPage() {
   };
 
   const handleSaveProfile = () => {
-    if (!isFirebaseConfigured || !user || !db) {
-        toast({ title: "Modo Demonstração", description: `As alterações foram salvas localmente.` });
+    if (!user || !db) {
+        toast({ title: "Erro de Conexão", description: `Não foi possível salvar seu perfil.` });
         return;
     }
     if (!name.trim() || !email.trim() || !localWhatsapp.trim()) {

@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { db, isFirebaseConfigured } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -63,7 +63,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
 
   useEffect(() => {
     const fetchNotes = async () => {
-      if (!isFirebaseConfigured || !db) return;
+      if (!db) return;
       const sessionRef = doc(db, 'sessions', sessionId);
       const sessionSnap = await getDoc(sessionRef);
       if (sessionSnap.exists()) {
@@ -79,7 +79,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
   }, [sessionId]);
 
   const handleSaveNotes = async () => {
-    if (!isFirebaseConfigured || !db || !sessionId) return;
+    if (!db || !sessionId) return;
     setIsSavingNotes(true);
     try {
       const sessionRef = doc(db, 'sessions', sessionId);
@@ -103,7 +103,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
   };
 
   const handleDisconnect = async () => {
-    if (!isFirebaseConfigured || !db) {
+    if (!db) {
       room.disconnect();
       return;
     }
@@ -245,12 +245,7 @@ export default function PsychologistSessionRoomPage() {
   const [loadingSession, setLoadingSession] = useState(true);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
-      setLoadingSession(false);
-      return;
-    }
-
-    if (user && params.id) {
+    if (user && params.id && db) {
       const fetchSessionData = async () => {
         setLoadingSession(true);
         const sessionRef = doc(db, 'sessions', params.id as string);
@@ -266,6 +261,8 @@ export default function PsychologistSessionRoomPage() {
         setLoadingSession(false);
       };
       fetchSessionData();
+    } else {
+        setLoadingSession(false);
     }
   }, [user, params.id, router, toast, db]);
 

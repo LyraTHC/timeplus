@@ -19,7 +19,7 @@ import { ArrowLeft, BarChart2, DollarSign, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { db, isFirebaseConfigured } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -55,13 +55,13 @@ export default function AdminPatientDetailPage({ params }: { params: { id: strin
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isFirebaseConfigured || !db) {
-        setError("Firebase não está configurado. Não é possível carregar os dados do paciente.");
-        setLoading(false);
-        return;
-    }
-
     const fetchPatientDetails = async () => {
+        if (!db) {
+            setError("Firebase não está configurado. Não é possível carregar os dados do paciente.");
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
