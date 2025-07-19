@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -51,9 +50,9 @@ export default function AdminDashboardPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const sessionsQuery = query(collection(db, "sessions"), orderBy('sessionTimestamp', 'desc'));
-            const usersQuery = query(collection(db, "users"), where('role', '!=', 'Admin'));
-            
+            const sessionsQuery = query(collection(db!, "sessions"), orderBy('sessionTimestamp', 'desc'));
+            const usersQuery = query(collection(db!, "users"), where('role', '!=', 'Admin'));
+
             const [sessionsSnapshot, usersSnapshot] = await Promise.all([
                 getDocs(sessionsQuery),
                 getDocs(usersQuery)
@@ -61,7 +60,7 @@ export default function AdminDashboardPage() {
 
             let totalRevenue = 0;
             const completedSessions = sessionsSnapshot.docs.filter(doc => ['Concluída', 'Agendada', 'Pago'].includes(doc.data().status));
-            
+
             completedSessions.forEach(doc => {
                 totalRevenue += doc.data().rate || 0;
             });
@@ -71,7 +70,7 @@ export default function AdminDashboardPage() {
             const totalSessions = completedSessions.length;
 
             setStats({ totalRevenue, platformProfit, activeUsers, totalSessions });
-            
+
             const transactionsData = sessionsSnapshot.docs.slice(0, 5).map(doc => {
                 const data = doc.data();
                 return {
@@ -120,7 +119,7 @@ export default function AdminDashboardPage() {
         </CardContent>
     </Card>
   );
-  
+
   return (
     <>
       <div className="flex items-center">
