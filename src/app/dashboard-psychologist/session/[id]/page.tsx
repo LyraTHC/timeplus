@@ -17,9 +17,9 @@ import {
   ControlBar,
   Chat,
   useRoomContext,
-  ConnectionState,
   useRemoteParticipants,
 } from '@livekit/components-react';
+import { ConnectionState } from 'livekit-client';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -74,9 +74,11 @@ function RoomContent({ sessionId }: { sessionId: string }) {
         }
       }
     };
-    fetchNotes();
+    if (db) {
+        fetchNotes();
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId, db]);
 
   const handleSaveNotes = async () => {
     if (!db || !sessionId) return;
@@ -259,12 +261,12 @@ export default function PsychologistSessionRoomPage() {
           router.push('/dashboard-psychologist');
         }
         setLoadingSession(false);
-      } else {
+      } else if (!loading) {
           setLoadingSession(false);
       }
     };
     fetchSessionData();
-  }, [user, params.id, router, toast]);
+  }, [user, params.id, router, toast, loading]);
 
   if (loading || loadingSession || !user || !userData || !sessionData) {
     return (

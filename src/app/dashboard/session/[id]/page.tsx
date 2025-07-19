@@ -11,13 +11,15 @@ import {
   GridLayout,
   Chat,
   useRoomContext,
-  ConnectionState,
   useRemoteParticipants,
 } from '@livekit/components-react';
+import { ConnectionState } from 'livekit-client';
 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Timer } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -25,7 +27,7 @@ function formatTime(seconds: number) {
   return `${mins}:${secs}`;
 }
 
-function RoomContent() {
+function RoomContent({ sessionId }: { sessionId: string }) {
   const room = useRoomContext();
   const router = useRouter();
   const { toast } = useToast();
@@ -48,7 +50,18 @@ function RoomContent() {
     };
   }, [room.state, isPsychologistPresent]);
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
+    if (db) {
+        try {
+            const sessionRef = doc(db, 'sessions', sessionId);
+            await updateDoc(sessionRef, {
+                effectiveDurationInSeconds: sessionTime,
+            });
+        } catch (error) {
+            console.error('Failed to update session duration on patient leave:', error);
+            // Non-critical, so we don't bother the user with a toast here.
+        }
+    }
     toast({
         title: "Sessão Encerrada",
         description: "Você saiu da sala de sessão.",
@@ -89,7 +102,7 @@ function RoomContent() {
   );
 }
 
-function SessionRoom({ roomName, userName }: { roomName: string, userName: string }) {
+function SessionRoom({ roomName, userName, sessionId }: { roomName: string, userName: string, sessionId: string }) {
   const router = useRouter();
   const { toast } = useToast();
 
@@ -98,7 +111,6 @@ function SessionRoom({ roomName, userName }: { roomName: string, userName: strin
       video={true}
       audio={true}
       serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_WS_URL}
-      // No onDisconnected here to allow re-entry
       token={async () => {
         try {
           const resp = await fetch(
@@ -123,7 +135,7 @@ function SessionRoom({ roomName, userName }: { roomName: string, userName: strin
       data-lk-theme="default"
       className="h-full"
     >
-      <RoomContent />
+      <RoomContent sessionId={sessionId} />
       <RoomAudioRenderer />
     </LiveKitRoom>
   );
@@ -147,7 +159,7 @@ export default function SessionRoomPage() {
 
   return (
     <div className="h-full max-h-[calc(100vh-8rem)]">
-      <SessionRoom roomName={roomName} userName={userData.name} />
+      <SessionRoom roomName={roomName} userName={userData.name} sessionId={params.id as string} />
     </div>
   );
 }
