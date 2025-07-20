@@ -107,12 +107,11 @@ export default function PsychologistDetailPage() {
   }, []);
 
   useEffect(() => {
+    if (!app || !params.id) {
+        setLoading(false);
+        return;
+    }
     const fetchPsychologistDetails = async () => {
-        if (!app || !params.id) {
-            setLoading(false);
-            return;
-        }
-
         setLoading(true);
         setError(null);
 
@@ -251,7 +250,7 @@ export default function PsychologistDetailPage() {
                     psychologistId: psychologist.id,
                     sessionTimestampMillis: sessionTimestampMillis,
                     payerEmail: userData.email,
-                    patientId: user.uid, // Correctly pass patientId
+                    patientId: user.uid,
                 }) 
             });
             const data = await response.json();
@@ -551,14 +550,14 @@ export default function PsychologistDetailPage() {
                          </div>
                         <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <Button 
-                            onClick={async () => await handleInitiatePayment('pix')}
+                            onClick={() => handleInitiatePayment('pix')}
                             disabled={isProcessingPayment}
                             variant="secondary"
                           >
                              {isProcessingPayment ? <Loader2 className="animate-spin" /> : "Pagar com PIX"}
                           </Button>
                           <Button 
-                            onClick={async () => await handleInitiatePayment('card')}
+                            onClick={() => handleInitiatePayment('card')}
                             disabled={isProcessingPayment}
                           >
                             {isProcessingPayment ? <Loader2 className="animate-spin" /> : "Pagar com Cartão"}
@@ -647,3 +646,4 @@ export default function PsychologistDetailPage() {
   );
 }
 
+    

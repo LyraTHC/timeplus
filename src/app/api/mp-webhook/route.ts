@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
                     paymentDetails: {
                         id: paymentId,
                         status: 'approved',
-                        paymentMethod: 'pix',
+                        paymentMethod: 'pix', // Assuming pix or card, this might need refinement
                     },
                     reviewed: false,
                     effectiveDurationInSeconds: 0,
@@ -98,3 +98,5 @@ export async function POST(req: NextRequest) {
     // Acknowledge other types of notifications without processing
     return NextResponse.json({ success: true, received: true });
 }
+
+    
