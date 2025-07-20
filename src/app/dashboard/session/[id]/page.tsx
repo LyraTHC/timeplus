@@ -9,6 +9,8 @@ import {
   RoomAudioRenderer,
   ControlBar,
   GridLayout,
+  ParticipantTile,
+  useParticipants,
   Chat,
   useRoomContext,
   useRemoteParticipants,
@@ -19,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Timer } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { ConnectionState } from 'livekit-client';
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -32,6 +35,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
   const { toast } = useToast();
   const remoteParticipants = useRemoteParticipants();
   const [sessionTime, setSessionTime] = useState(0);
+  const participants = useParticipants();
 
   const isPsychologistPresent = useMemo(() => {
     return remoteParticipants.length > 0;
@@ -58,7 +62,6 @@ function RoomContent({ sessionId }: { sessionId: string }) {
             });
         } catch (error) {
             console.error('Failed to update session duration on patient leave:', error);
-            // Non-critical, so we don't bother the user with a toast here.
         }
     }
     toast({
@@ -84,7 +87,11 @@ function RoomContent({ sessionId }: { sessionId: string }) {
     <div className="grid grid-cols-1 md:grid-cols-4 h-full gap-4">
       <div className="md:col-span-3 h-full flex flex-col">
         <div className="flex-grow">
-          <GridLayout />
+          <GridLayout tracks={participants.map((p) => p.videoTrackRefs).flat()}>
+            {participants.map((participant) => (
+              <ParticipantTile key={participant.identity} />
+            ))}
+          </GridLayout>
         </div>
         <div className="h-[90px] relative">
           <div className="absolute top-[-40px] left-1/2 -translate-x-1/2 bg-muted text-muted-foreground px-3 py-1 rounded-md text-sm font-mono flex items-center gap-2">

@@ -18,6 +18,8 @@ import {
   Chat,
   useRoomContext,
   useRemoteParticipants,
+  ParticipantTile,
+  useParticipants,
 } from '@livekit/components-react';
 
 import { Button } from "@/components/ui/button";
@@ -43,6 +45,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const { toast } = useToast();
+  const participants = useParticipants();
 
   const isPatientPresent = useMemo(() => {
     return remoteParticipants.length > 0;
@@ -67,15 +70,13 @@ function RoomContent({ sessionId }: { sessionId: string }) {
       const sessionSnap = await getDoc(sessionRef);
       if (sessionSnap.exists()) {
         setNotes(sessionSnap.data().psychologistNote || '');
-        // Do not reset sessionTime from Firestore to allow it to continue from where it was
         if (sessionTime === 0 && sessionSnap.data().effectiveDurationInSeconds > 0) {
            setSessionTime(sessionSnap.data().effectiveDurationInSeconds);
         }
       }
     };
     fetchNotes();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId, sessionTime]);
 
   const handleSaveNotes = async () => {
     if (!db || !sessionId) return;
@@ -140,7 +141,11 @@ function RoomContent({ sessionId }: { sessionId: string }) {
     <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0">
       <div className="lg:col-span-3 h-full min-h-[400px] flex flex-col">
         <div className="flex-grow">
-          <GridLayout />
+          <GridLayout tracks={participants.map((p) => p.videoTrackRefs).flat()}>
+            {participants.map((participant) => (
+              <ParticipantTile key={participant.identity} />
+            ))}
+          </GridLayout>
         </div>
         <div className="h-[90px] relative">
           <div className="absolute top-[-40px] left-1/2 -translate-x-1/2 bg-muted text-muted-foreground px-3 py-1 rounded-md text-sm font-mono flex items-center gap-2">
