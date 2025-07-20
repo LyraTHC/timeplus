@@ -55,7 +55,9 @@ export async function POST(req: NextRequest) {
                     adminDb.collection("users").doc(psychologistId).get(),
                 ]);
 
+                // --- CRITICAL FIX: Ensure documents exist BEFORE accessing data ---
                 if (!patientDoc.exists || !psychologistDoc.exists) {
+                    console.error(`Webhook Error: Patient (${patientId}) or Psychologist (${psychologistId}) document not found for session ${sessionDocId}`);
                     throw new Error(`Patient or psychologist not found for session ${sessionDocId}`);
                 }
 

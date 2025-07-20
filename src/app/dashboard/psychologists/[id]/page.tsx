@@ -33,7 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { app, db } from "@/lib/firebase";
+import { app, db, isFirebaseConfigured } from "@/lib/firebase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -107,11 +107,16 @@ export default function PsychologistDetailPage() {
   }, []);
 
   useEffect(() => {
-    if (!app || !params.id) {
+    if (!isFirebaseConfigured || !params.id) {
         setLoading(false);
         return;
     }
     const fetchPsychologistDetails = async () => {
+        if (!app) {
+            setError("A conexão com o servidor não pôde ser estabelecida.");
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         setError(null);
 
@@ -192,6 +197,9 @@ export default function PsychologistDetailPage() {
     sessionDate.setHours(hours, minutes, 0, 0);
     const sessionTimestampMillis = sessionDate.getTime();
 
+    // Use psychologist.id from the fetched data, which is the document ID (UID).
+    const psychologistId = psychologist.id;
+
     try {
         if (method === 'card') {
             const response = await fetch('/api/create-payment', { 
@@ -200,7 +208,7 @@ export default function PsychologistDetailPage() {
                 body: JSON.stringify({ 
                     rate: psychologist.professionalProfile.rate, 
                     psychologistName: psychologist.name,
-                    psychologistId: psychologist.id,
+                    psychologistId: psychologistId,
                     sessionTimestampMillis: sessionTimestampMillis,
                     payerEmail: userData.email,
                     patientId: user.uid,
@@ -212,7 +220,7 @@ export default function PsychologistDetailPage() {
             setDialogStep('card-payment');
 
         } else { // pix
-            setCurrentPixSessionId(`session-${psychologist.id}-${sessionTimestampMillis}`);
+            setCurrentPixSessionId(`session-${psychologistId}-${sessionTimestampMillis}`);
             
             const response = await fetch('/api/create-pix-payment', { 
                 method: 'POST', 
@@ -221,7 +229,7 @@ export default function PsychologistDetailPage() {
                   rate: psychologist.professionalProfile.rate, 
                   payerEmail: userData.email, 
                   description: `Sessão com ${psychologist.name}`,
-                  psychologistId: psychologist.id,
+                  psychologistId: psychologistId,
                   sessionTimestampMillis: sessionTimestampMillis,
                   patientId: user.uid,
                 }) 

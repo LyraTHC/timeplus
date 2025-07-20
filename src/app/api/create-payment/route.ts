@@ -49,6 +49,12 @@ export async function POST(req: NextRequest) {
         payer: {
           email: payerEmail,
         },
+        back_urls: {
+            success: `https://studio--timeplus-m6gaz.us-central1.hosted.app/dashboard`,
+            failure: `https://studio--timeplus-m6gaz.us-central1.hosted.app/dashboard`,
+            pending: `https://studio--timeplus-m6gaz.us-central1.hosted.app/dashboard`,
+        },
+        auto_return: 'approved',
         external_reference: externalReference,
         notification_url: notificationUrl,
       },

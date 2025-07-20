@@ -75,7 +75,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
     };
     fetchNotes();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, db]);
+  }, [sessionId]);
 
   const handleSaveNotes = async () => {
     if (!db || !sessionId) return;
