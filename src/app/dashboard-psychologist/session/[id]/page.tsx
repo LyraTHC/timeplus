@@ -141,7 +141,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
     <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0">
       <div className="lg:col-span-3 h-full min-h-[400px] flex flex-col">
         <div className="flex-grow">
-          <GridLayout tracks={participants.map((p) => p.videoTrackRefs).flat()}>
+          <GridLayout>
             {participants.map((participant) => (
               <ParticipantTile key={participant.identity} />
             ))}

@@ -21,7 +21,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Timer } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { ConnectionState } from 'livekit-client';
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -87,7 +86,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
     <div className="grid grid-cols-1 md:grid-cols-4 h-full gap-4">
       <div className="md:col-span-3 h-full flex flex-col">
         <div className="flex-grow">
-          <GridLayout tracks={participants.map((p) => p.videoTrackRefs).flat()}>
+          <GridLayout>
             {participants.map((participant) => (
               <ParticipantTile key={participant.identity} />
             ))}
