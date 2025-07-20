@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,11 +27,8 @@ export async function POST(req: NextRequest) {
     const payment = new Payment(client);
     const idempotencyKey = uuidv4();
 
-    // The full URL of your deployment is needed for the webhook.
-    // This dynamically creates the full URL based on VERCEL_URL (in production) or request headers.
-    const host = process.env.VERCEL_URL || req.headers.get("host") || 'localhost:3000';
-    const proto = process.env.NODE_ENV === "production" ? 'https' : 'http';
-    const notificationUrl = `${proto}://${host}/api/mp-webhook`;
+    // Use the explicit public URL for the Firebase Studio environment. This is robust.
+    const notificationUrl = `https://studio--timeplus-m6gaz.us-central1.hosted.app/api/mp-webhook`;
     
     // The external reference will now contain all the data needed for the webhook to create the session
     const externalReference = `sid_${psychologistId}_${sessionTimestampMillis}_uid_${patientId}`;
