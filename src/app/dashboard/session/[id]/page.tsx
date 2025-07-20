@@ -88,7 +88,7 @@ function RoomContent({ sessionId }: { sessionId: string }) {
         <div className="flex-grow">
           <GridLayout>
             {participants.map((participant) => (
-              <ParticipantTile key={participant.identity} />
+              <ParticipantTile key={participant.identity} participant={participant} />
             ))}
           </GridLayout>
         </div>
