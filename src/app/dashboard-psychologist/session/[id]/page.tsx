@@ -19,7 +19,6 @@ import {
   useRoomContext,
   useRemoteParticipants,
 } from '@livekit/components-react';
-import { ConnectionState } from 'livekit-client';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -74,11 +73,9 @@ function RoomContent({ sessionId }: { sessionId: string }) {
         }
       }
     };
-    if (db) {
-        fetchNotes();
-    }
+    fetchNotes();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId, db]);
 
   const handleSaveNotes = async () => {
     if (!db || !sessionId) return;
@@ -296,5 +293,3 @@ export default function PsychologistSessionRoomPage() {
     </div>
   );
 }
-
-    

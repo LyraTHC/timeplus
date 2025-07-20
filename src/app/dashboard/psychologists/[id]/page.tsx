@@ -38,7 +38,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { doc, onSnapshot, setDoc, Timestamp } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { Input } from "@/components/ui/input";
 
 
@@ -139,7 +139,7 @@ export default function PsychologistDetailPage() {
 
     fetchPsychologistDetails();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+  }, [params.id, app]);
 
   useEffect(() => {
     if (selectedDate && psychologist?.availability) {
@@ -164,7 +164,7 @@ export default function PsychologistDetailPage() {
 
     const sessionRef = doc(db, 'sessions', currentPixSessionId);
     const unsubscribe = onSnapshot(sessionRef, (docSnap) => {
-        if (docSnap.exists() && docSnap.data().status === 'Pago') {
+        if (docSnap.exists && docSnap.data().status === 'Pago') {
             toast({
               title: 'Pagamento Aprovado!',
               description: 'Sua sessão foi agendada e está no seu painel.',
@@ -175,57 +175,7 @@ export default function PsychologistDetailPage() {
     });
 
     return () => unsubscribe(); // Cleanup listener on component unmount or when pixDetails changes
-  }, [currentPixSessionId, router, toast]);
-
-  const handleCreateSession = async (paymentDetails: { paymentMethod: string; id?: string; status?: string; }) => {
-    if (!selectedDate || !selectedTime || !psychologist || !user || !userData || !db) {
-        toast({ variant: "destructive", title: "Erro Interno", description: "Dados da sessão ou do psicólogo ausentes para criar a sessão." });
-        return null;
-    }
-
-    try {
-        const sessionDate = new Date(selectedDate);
-        const [hours, minutes] = selectedTime.split(':').map(Number);
-        sessionDate.setHours(hours, minutes, 0, 0);
-
-        const sessionDocId = `session-${psychologist.id}-${sessionDate.getTime()}`;
-
-        await setDoc(doc(db, "sessions", sessionDocId), {
-            participantIds: [user.uid, psychologist.id],
-            patientId: user.uid,
-            patientName: userData.name,
-            psychologistId: psychologist.id,
-            psychologistName: psychologist.name,
-            sessionTimestamp: Timestamp.fromDate(sessionDate),
-            createdAt: Timestamp.now(),
-            status: 'Pago',
-            rate: psychologist.professionalProfile?.rate,
-            paymentDetails: paymentDetails,
-            reviewed: false,
-            effectiveDurationInSeconds: 0,
-        });
-
-        toast({
-            title: 'Pagamento Aprovado!',
-            description: 'Sua sessão foi agendada e está no seu painel.',
-        });
-        router.push('/dashboard');
-        
-        return sessionDocId;
-
-    } catch (error: any) {
-        console.error("Error creating session after payment:", error);
-        toast({
-            variant: "destructive",
-            title: "Erro Crítico de Agendamento",
-            description: error.message || "Seu pagamento foi aprovado, mas não conseguimos agendar sua sessão. Por favor, entre em contato com o suporte imediatamente com o ID do pagamento."
-        });
-        return null;
-    } finally {
-        setIsConfirming(false);
-        setIsProcessingPayment(false);
-    }
-  };
+  }, [currentPixSessionId, router, toast, db]);
   
   const handleInitiatePayment = async (method: 'card' | 'pix') => {
     if (!selectedDate || !selectedTime || !user || !userData || !psychologist) {
@@ -550,14 +500,14 @@ export default function PsychologistDetailPage() {
                          </div>
                         <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <Button 
-                            onClick={() => handleInitiatePayment('pix')}
+                            onClick={async () => await handleInitiatePayment('pix')}
                             disabled={isProcessingPayment}
                             variant="secondary"
                           >
                              {isProcessingPayment ? <Loader2 className="animate-spin" /> : "Pagar com PIX"}
                           </Button>
                           <Button 
-                            onClick={() => handleInitiatePayment('card')}
+                            onClick={async () => await handleInitiatePayment('card')}
                             disabled={isProcessingPayment}
                           >
                             {isProcessingPayment ? <Loader2 className="animate-spin" /> : "Pagar com Cartão"}
@@ -589,12 +539,14 @@ export default function PsychologistDetailPage() {
                                             debitCard: 'all',
                                         },
                                     }}
-                                    onSubmit={async ({ formData }) => {
-                                        if (formData.status === 'approved') {
-                                            await handleCreateSession({ id: formData.id, paymentMethod: 'card', status: 'approved' });
-                                        } else {
-                                            handlePaymentError(`O pagamento foi ${formData.status}.`);
-                                        }
+                                    onSubmit={async () => {
+                                        // A submissão é tratada pelo webhook, esta função apenas fecha a janela no sucesso.
+                                        // O webhook fará a criação da sessão de forma robusta.
+                                        toast({
+                                          title: "Processando Pagamento...",
+                                          description: "Aguarde, estamos confirmando seu pagamento. Você será redirecionado em breve.",
+                                        });
+                                        // Não chamamos handleCreateSession aqui, esperamos o webhook
                                     }}
                                     onError={() => handlePaymentError("Não foi possível processar o pagamento com cartão.")}
                                 />
@@ -645,5 +597,3 @@ export default function PsychologistDetailPage() {
     </div>
   );
 }
-
-    

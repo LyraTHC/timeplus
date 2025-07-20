@@ -116,7 +116,7 @@ export default function PsychologistsPage() {
     };
 
     fetchPsychologists();
-  }, [toast]);
+  }, [toast, app]);
   
   const allSpecialties = useMemo(() => {
     if (!psychologists) return [];

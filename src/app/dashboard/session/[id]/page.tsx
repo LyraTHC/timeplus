@@ -13,7 +13,6 @@ import {
   useRoomContext,
   useRemoteParticipants,
 } from '@livekit/components-react';
-import { ConnectionState } from 'livekit-client';
 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -163,5 +162,3 @@ export default function SessionRoomPage() {
     </div>
   );
 }
-
-    
