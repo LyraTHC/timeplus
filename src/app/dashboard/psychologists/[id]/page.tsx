@@ -139,7 +139,7 @@ export default function PsychologistDetailPage() {
 
     fetchPsychologistDetails();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id, app]);
+  }, [params.id]);
 
   useEffect(() => {
     if (selectedDate && psychologist?.availability) {
@@ -164,18 +164,21 @@ export default function PsychologistDetailPage() {
 
     const sessionRef = doc(db, 'sessions', currentPixSessionId);
     const unsubscribe = onSnapshot(sessionRef, (docSnap) => {
-        if (docSnap.exists && docSnap.data().status === 'Pago') {
-            toast({
-              title: 'Pagamento Aprovado!',
-              description: 'Sua sessão foi agendada e está no seu painel.',
-            });
-            router.push('/dashboard');
-            setIsConfirming(false); // Close dialog
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data && data.status === 'Pago') {
+                toast({
+                  title: 'Pagamento Aprovado!',
+                  description: 'Sua sessão foi agendada e está no seu painel.',
+                });
+                router.push('/dashboard');
+                setIsConfirming(false); // Close dialog
+            }
         }
     });
 
     return () => unsubscribe(); // Cleanup listener on component unmount or when pixDetails changes
-  }, [currentPixSessionId, router, toast, db]);
+  }, [currentPixSessionId, router, toast]);
   
   const handleInitiatePayment = async (method: 'card' | 'pix') => {
     if (!selectedDate || !selectedTime || !user || !userData || !psychologist) {
@@ -500,14 +503,14 @@ export default function PsychologistDetailPage() {
                          </div>
                         <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <Button 
-                            onClick={async () => await handleInitiatePayment('pix')}
+                            onClick={() => handleInitiatePayment('pix')}
                             disabled={isProcessingPayment}
                             variant="secondary"
                           >
                              {isProcessingPayment ? <Loader2 className="animate-spin" /> : "Pagar com PIX"}
                           </Button>
                           <Button 
-                            onClick={async () => await handleInitiatePayment('card')}
+                            onClick={() => handleInitiatePayment('card')}
                             disabled={isProcessingPayment}
                           >
                             {isProcessingPayment ? <Loader2 className="animate-spin" /> : "Pagar com Cartão"}
