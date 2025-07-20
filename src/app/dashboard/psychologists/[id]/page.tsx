@@ -108,14 +108,13 @@ export default function PsychologistDetailPage() {
 
   useEffect(() => {
     const fetchPsychologistDetails = async () => {
-        setLoading(true);
-        setError(null);
-
         if (!app || !params.id) {
-            setError("A aplicação não está configurada corretamente.");
             setLoading(false);
             return;
         }
+
+        setLoading(true);
+        setError(null);
 
         try {
             const functions = getFunctions(app);
@@ -139,9 +138,7 @@ export default function PsychologistDetailPage() {
         }
     };
 
-    if (params.id) {
-        fetchPsychologistDetails();
-    }
+    fetchPsychologistDetails();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
@@ -182,7 +179,7 @@ export default function PsychologistDetailPage() {
   }, [currentPixSessionId, router, toast]);
 
   const handleCreateSession = async (paymentDetails: { paymentMethod: string; id?: string; status?: string; }) => {
-    if (!selectedDate || !selectedTime || !psychologist || !app || !user || !userData || !db) {
+    if (!selectedDate || !selectedTime || !psychologist || !user || !userData || !db) {
         toast({ variant: "destructive", title: "Erro Interno", description: "Dados da sessão ou do psicólogo ausentes para criar a sessão." });
         return null;
     }
@@ -554,14 +551,14 @@ export default function PsychologistDetailPage() {
                          </div>
                         <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <Button 
-                            onClick={() => handleInitiatePayment('pix')}
+                            onClick={async () => await handleInitiatePayment('pix')}
                             disabled={isProcessingPayment}
                             variant="secondary"
                           >
                              {isProcessingPayment ? <Loader2 className="animate-spin" /> : "Pagar com PIX"}
                           </Button>
                           <Button 
-                            onClick={() => handleInitiatePayment('card')}
+                            onClick={async () => await handleInitiatePayment('card')}
                             disabled={isProcessingPayment}
                           >
                             {isProcessingPayment ? <Loader2 className="animate-spin" /> : "Pagar com Cartão"}
@@ -649,3 +646,4 @@ export default function PsychologistDetailPage() {
     </div>
   );
 }
+

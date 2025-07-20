@@ -247,7 +247,11 @@ export default function PsychologistSessionRoomPage() {
 
   useEffect(() => {
     const fetchSessionData = async () => {
-      if (user && params.id && db) {
+      if (!db) {
+          setLoadingSession(false);
+          return;
+      }
+      if (user && params.id) {
         setLoadingSession(true);
         const sessionRef = doc(db, 'sessions', params.id as string);
         const sessionSnap = await getDoc(sessionRef);
